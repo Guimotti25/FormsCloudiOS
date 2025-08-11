@@ -18,11 +18,11 @@ class SwiftDataStack {
     private init() {
         do {
             container = try ModelContainer(for: 
-                FormSubmission.self// pode adicionar todos os seus modelos aqui
+                FormSubmission.self
             )
             context = container.mainContext
         } catch {
-            fatalError("Falha ao criar o container do SwiftData: \(error)")
+            fatalError("Cant creat SwiftData: \(error)")
         }
     }
 }

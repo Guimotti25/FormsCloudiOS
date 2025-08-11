@@ -18,7 +18,6 @@ struct SubmissionCardView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
 
-            // ATUALIZADO: Buscando os valores pelo 'name' do campo
             let firstName = submission.fieldValues["first_name"] ?? "N/A"
             let lastName = submission.fieldValues["last_name"] ?? ""
             

@@ -5,41 +5,40 @@
 //  Created by Guilherme Motti on 09/08/25.
 //
 
-
 import SwiftUI
 import SwiftData
 
 struct EntryListView: View {
+ 
     let form: FormModel
+    @StateObject private var viewModel: EntryListViewModel
     @Query private var submissions: [FormSubmission]
-    @State private var isAddingNewEntry = false
-    @State private var submissionToDelete: FormSubmission?
-    @Environment(\.modelContext) private var modelContext
-
-    init(form: FormModel) {
+    init(form: FormModel, modelContext: ModelContext) {
         self.form = form
+        
         let formID = form.id
-        let predicate = #Predicate<FormSubmission> { submission in
-            submission.parentFormUUID == formID
-        }
+        let predicate = #Predicate<FormSubmission> { $0.parentFormUUID == formID }
         self._submissions = Query(filter: predicate, sort: \.createdAt, order: .reverse)
+        
+        _viewModel = StateObject(wrappedValue: EntryListViewModel(modelContext: modelContext))
     }
 
     var body: some View {
         Group {
-            if submissions.isEmpty {
-                ContentUnavailableView("No Forms",
-                                       systemImage: "doc.text.magnifyingglass",
-                                       description: Text("Tap on '+' to add the first entry for this form."))
+            if viewModel.submissions.isEmpty {
+                ContentUnavailableView(
+                    "No Entries",
+                    systemImage: "doc.text.magnifyingglass",
+                    description: Text("Tap on '+' to add the first entry for this form.")
+                )
             } else {
                 List {
-                    ForEach(submissions) { submission in
+                    ForEach(viewModel.submissions) { submission in
                         NavigationLink(destination: SubmissionDetailView(submission: submission, form: self.form)) {
-                            
                             SubmissionCardView(submission: submission)
-                            .onLongPressGesture {
-                                 self.submissionToDelete = submission
-                             }
+                                .onLongPressGesture {
+                                    viewModel.setSubmissionToDelete(submission)
+                                }
                         }
                     }
                 }
@@ -48,55 +47,31 @@ struct EntryListView: View {
         .navigationTitle(form.title)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button(action: { isAddingNewEntry = true }) {
+                Button(action: {
+                    viewModel.addEntryButtonTapped()
+                }) {
                     Image(systemName: "plus")
                 }
             }
         }
-        .sheet(isPresented: $isAddingNewEntry) {
-            FormDetailView(form: self.form)
+        .sheet(isPresented: $viewModel.isAddingNewEntry) {
+            NewFormsView(form: self.form, modelContext: viewModel.modelContext)
         }
-        .alert("Confirm", isPresented: .constant(submissionToDelete != nil), actions: {
-              Button("Delete", role: .destructive) {
-                  if let submission = submissionToDelete {
-                      delete(submission: submission)
-                  }
-              }
-              Button("Cancel", role: .cancel) {
-                  submissionToDelete = nil
-              }
-          }, message: {
-              Text("Are you sure you want to delete this form?")
-          })    }
-    
-    private func delete(submission: FormSubmission) {
-          modelContext.delete(submission)
-        submissionToDelete = nil
-      }
-}
-
-#Preview {
-    let sampleForm = load("all-fields.json") as FormModel
-    return NavigationStack {
-        EntryListView(form: sampleForm)
-            .modelContainer(for: FormSubmission.self, inMemory: true)
-    }
-}
-
-
-func load<T: Decodable>(_ filename: String) -> T {
-    guard let file = Bundle.main.url(forResource: filename, withExtension: nil) else {
-        fatalError("Cant load the \(filename) in main bundle")
-    }
-    
-    guard let data = try? Data(contentsOf: file) else {
-        fatalError("Cant load the \(filename) in bundle.")
-    }
-    
-    do {
-        let decoder = JSONDecoder()
-        return try decoder.decode(T.self, from: data)
-    } catch {
-        fatalError("Cant decode the\(filename) like \(T.self):\n\(error)")
+        .alert("Confirm Deletion", isPresented: .constant(viewModel.submissionToDelete != nil)) {
+            Button("Delete", role: .destructive) {
+                viewModel.deleteSubmission()
+            }
+            Button("Cancel", role: .cancel) {
+                viewModel.setSubmissionToDelete(nil)
+            }
+        } message: {
+            Text("Are you sure you want to delete this entry? This action cannot be undone.")
+        }
+        .onChange(of: submissions) {
+            viewModel.submissions = submissions
+        }
+        .onAppear {
+            viewModel.submissions = submissions
+        }
     }
 }

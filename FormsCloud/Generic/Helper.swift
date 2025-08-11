@@ -12,11 +12,11 @@ func loadJSONFile(named fileName: String, inDirectory directory: String? = "Json
         do {
             return try String(contentsOfFile: path, encoding: .utf8)
         } catch {
-            print("Erro ao ler \(fileName): \(error)")
+            print("Error \(fileName): \(error)")
             return nil
         }
     } else {
-        print("Arquivo não encontrado no bundle: \(fileName).json (dir: \(directory ?? "nil"))")
+        print("File not founded in bundle: \(fileName).json (dir: \(directory ?? "nil"))")
     }
     return nil
 }
@@ -27,7 +27,7 @@ func loadForm(named fileName: String, inDirectory directory: String? = "Json") -
     do {
         return try JSONDecoder().decode(FormModel.self, from: data)
     } catch {
-        print("Erro ao decodificar \(fileName): \(error)")
+        print("Error \(fileName): \(error)")
         return nil
     }
 }

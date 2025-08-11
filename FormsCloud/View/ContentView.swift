@@ -10,16 +10,17 @@ import SwiftUI
 struct ContentView: View {
     @State private var forms: [(fileName: String, model: FormModel)] = []
     
+    @Environment(\.modelContext) private var modelContext
+    
     var body: some View {
         NavigationView {
             List(forms, id: \.fileName) { item in
-                NavigationLink(
-                    destination: EntryListView(form: item.model)
-                ) {
-                    Text(item.model.title)
-                        .font(.headline)
-                }
-            }
+                         
+                 NavigationLink(destination: EntryListView(form: item.model, modelContext: modelContext)) {
+                     Text(item.model.title)
+                         .font(.headline)
+                 }
+             }
             .navigationTitle("Forms")
             .onAppear {
                 if forms.isEmpty {

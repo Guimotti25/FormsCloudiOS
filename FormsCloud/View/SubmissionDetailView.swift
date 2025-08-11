@@ -31,7 +31,6 @@ struct SubmissionDetailView: View {
     }
 }
 
-// MARK: - View Auxiliar para cada Linha da Lista
 private struct SubmissionDetailRow: View {
     let field: Field
     let submission: FormSubmission
@@ -110,7 +109,6 @@ private struct SubmissionDetailRow: View {
     }
 }
 
-// MARK: - View para Renderizar PDFs
 private struct PDFKitView: UIViewRepresentable {
     let url: URL
 
@@ -127,10 +125,8 @@ private struct PDFKitView: UIViewRepresentable {
 }
 
 
-// MARK: - Preview
 #Preview {
-    // Para o preview do PDF funcionar, adicione um arquivo PDF de exemplo ao seu projeto
-    // e chame-o de "sample.pdf"
+
     let samplePDFURL = Bundle.main.url(forResource: "sample", withExtension: "pdf")?.absoluteString ?? ""
     
     let sampleForm = FormModel(
@@ -149,7 +145,7 @@ private struct PDFKitView: UIViewRepresentable {
         parentFormUUID: "form_uuid_preview",
         fieldValues: [
             "name": "Guilherme Motti",
-            "country": "br", // Salva o valor 'br'
+            "country": "br", 
             "attachment_pdf": samplePDFURL,
             "attachment_img": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzRLynGuRfxgxbM1SdTqhYWm39PHEpWu96Xg&s"
         ]
